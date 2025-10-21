@@ -2,6 +2,8 @@ package org.example.matrix;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.Locale;
+
 
 public class BenchmarkMain {
     public static void main(String[] args) throws Exception {
@@ -31,7 +33,7 @@ public class BenchmarkMain {
                 double[][] C = Matrix.matmul_ijk(A, B);
                 long t1 = System.nanoTime();
                 double secs = (t1 - t0)/1e9;
-                pw.printf("java,%d,%d,%.6f%n", n, r, secs);
+                pw.printf(Locale.US, "java,%d,%d,%.6f%n", n, r, secs);
             }
         }
     }

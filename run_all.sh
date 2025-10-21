@@ -39,13 +39,13 @@ for N in "${SIZES[@]}"; do
     echo "  → n=${N}, runs=${RUNS}"
     java org.example.matrix.BenchmarkMain -n ${N} -runs ${RUNS} -seed ${SEED} -out ${OUT_FILE}
 done
-cd ../../..
+cd ../..
 echo
 
 # --- C++ ---
 echo "C++"
 cd ${CPP_DIR}
-g++ -O3 -march=native src/bench_main.cpp -o bench
+clang++ -O3 -std=c++17 src/bench_main.cpp -o bench
 for N in "${SIZES[@]}"; do
     OUT_FILE="../${RESULTS_DIR}/cpp_${N}.csv"
     echo "  → n=${N}, runs=${RUNS}"
@@ -85,3 +85,13 @@ echo "Archivos generados:"
 ls results
 echo "----------------------------------------------"
 echo "Tabla resumen guardada en: results/summary.csv"
+
+# --- Generar gráficos automáticamente ---
+if [ -f "plot_results.py" ]; then
+    echo
+    echo "Generando gráficos con plot_results.py..."
+    python3 plot_results.py
+    echo "Gráficos guardados en results/plots/"
+else
+    echo "No se encontró plot_results.py, omitiendo generación de gráficos."
+fi
