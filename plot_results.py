@@ -10,6 +10,9 @@ output_dir.mkdir(exist_ok=True)
 
 df = pd.read_csv(summary_path)
 
+languages = df["language"].unique()
+sizes = sorted(df["n"].unique())
+
 df = df.sort_values(by=["n", "language"])
 
 colors = {
@@ -80,5 +83,35 @@ plt.tight_layout()
 out_file_bar = output_dir / "comparison_bars.png"
 plt.savefig(out_file_bar, dpi=300)
 print(f" Bar chart saved in: {out_file_bar}")
+
+
+if "mean_memory_mb" in df.columns:
+    plt.figure(figsize=(8,5))
+    for lang in languages:
+        sub = df[df["language"] == lang]
+        plt.plot(sub["n"], sub["mean_memory_mb"], marker="o", label=lang)
+    plt.xlabel("Matrix size (n)")
+    plt.ylabel("Mean memory usage (MB)")
+    plt.title("Average Memory Usage vs Matrix Size")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("results/plots/memory_vs_size.png", dpi=300)
+    plt.close()
+
+if "mean_cpu_percent" in df.columns:
+    plt.figure(figsize=(8,5))
+    for lang in languages:
+        sub = df[df["language"] == lang]
+        plt.plot(sub["n"], sub["mean_cpu_percent"], marker="o", label=lang)
+    plt.xlabel("Matrix size (n)")
+    plt.ylabel("Mean CPU usage (%)")
+    plt.title("Average CPU Utilization vs Matrix Size")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("results/plots/cpu_vs_size.png", dpi=300)
+    plt.close()
+
 
 print("\n All graphics generated correctly.")

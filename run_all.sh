@@ -28,7 +28,7 @@ done
 echo
 
 # --- Java ---
-echo "☕ Java"
+echo "Java"
 cd ${JAVA_DIR}
 mkdir -p out
 javac -d out src/main/java/org/example/matrix/*.java
@@ -58,23 +58,42 @@ python3 - <<'EOF'
 import pandas as pd
 import glob
 import numpy as np
+from pathlib import Path
 
 files = glob.glob("results/*.csv")
 data = []
+
 for f in files:
-    if "summary" in f: continue
+    if "summary" in f:
+        continue
     df = pd.read_csv(f)
+
+    # Handle both old and new formats gracefully
+    cols = df.columns
+    if "memory_mb" not in cols:
+        df["memory_mb"] = np.nan
+    if "cpu_percent" not in cols:
+        df["cpu_percent"] = np.nan
+
     lang = df["language"].iloc[0]
     n = df["n"].iloc[0]
-    mean = df["seconds"].astype(float).mean()
-    std = df["seconds"].astype(float).std()
-    data.append((lang, n, mean, std))
 
-summary = pd.DataFrame(data, columns=["language", "n", "mean_seconds", "std_seconds"])
+    mean_time = df["seconds"].astype(float).mean()
+    std_time = df["seconds"].astype(float).std()
+    mean_mem = df["memory_mb"].astype(float).mean()
+    mean_cpu = df["cpu_percent"].astype(float).mean()
+
+    data.append((lang, n, mean_time, std_time, mean_mem, mean_cpu))
+
+summary = pd.DataFrame(
+    data,
+    columns=["language", "n", "mean_seconds", "std_seconds", "mean_memory_mb", "mean_cpu_percent"]
+)
 summary = summary.sort_values(by=["n", "language"])
-summary.to_csv("results/summary.csv", index=False)
+Path("results/summary.csv").write_text(summary.to_csv(index=False))
 print(summary)
 EOF
+
 
 echo
 echo "Benchmark completed. Results in folder. 'results/'"

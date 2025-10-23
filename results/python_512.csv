@@ -1,6 +1,6 @@
-language,n,run,seconds
-python,512,1,4.260550
-python,512,2,4.178625
-python,512,3,4.168258
-python,512,4,4.243225
-python,512,5,4.168782
+language,n,run,seconds,memory_mb,cpu_percent
+python,512,1,4.123390,38.33,97.9
+python,512,2,4.033291,40.23,98.7
+python,512,3,4.050217,42.86,98.2
+python,512,4,3.951525,44.20,99.9
+python,512,5,4.167471,34.05,97.2
