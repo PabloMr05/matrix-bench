@@ -12,11 +12,12 @@ The objective is to analyze the computational efficiency of each language when p
 ### Algorithm
 All implementations use the classical triple-nested loop for matrix multiplication in `i–j–k` order:
 
+```bash
 for i in range(n):
 for j in range(n):
 for k in range(n):
 C[i][j] += A[i][k] * B[k][j]
-
+```
 
 ### Parameters
 - **Matrix sizes:** 128×128, 256×256, 384×384, 512×512  
@@ -36,6 +37,7 @@ Experiments were executed using:
 
 ## 3. Project Structure
 
+```bash
 matrix-bench/
 ├─ python/ # Python implementation and benchmark
 ├─ java/ # Java implementation and benchmark
@@ -44,7 +46,7 @@ matrix-bench/
 ├─ run_all.sh # Automation script for all benchmarks
 ├─ plot_results.py # Chart generation script
 └─ paper/ # Report and supporting documentation
-
+```
 
 ---
 
