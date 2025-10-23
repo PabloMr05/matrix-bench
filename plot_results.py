@@ -4,22 +4,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
-# === Configuración ===
 summary_path = Path("results/summary.csv")
 output_dir = Path("results/plots")
 output_dir.mkdir(exist_ok=True)
 
-# === Leer datos ===
 df = pd.read_csv(summary_path)
 
-# Ordenar datos para que los tamaños estén en orden creciente
 df = df.sort_values(by=["n", "language"])
 
-# === Colores y estilos por lenguaje ===
 colors = {
-    "python": "#FFB000",  # amarillo
-    "java": "#0072B2",    # azul
-    "cpp": "#009E73",     # verde
+    "python": "#FFB000",  
+    "java": "#0072B2",    
+    "cpp": "#009E73",     
 }
 
 markers = {
@@ -28,25 +24,23 @@ markers = {
     "cpp": "D",
 }
 
-# === Gráfico principal: Tiempo medio vs Tamaño ===
 plt.figure(figsize=(8,5))
 for lang in df["language"].unique():
     d = df[df["language"] == lang]
     plt.plot(d["n"], d["mean_seconds"], marker=markers[lang],
              color=colors[lang], linewidth=2, label=lang.capitalize())
 
-plt.title("Comparativa de tiempo medio de ejecución")
-plt.xlabel("Tamaño de la matriz (n × n)")
-plt.ylabel("Tiempo medio (segundos)")
-plt.legend(title="Lenguaje")
+plt.title("Average execution time comparison")
+plt.xlabel("Matrix size (n × n)")
+plt.ylabel("Average time (seconds)")
+plt.legend(title="Language")
 plt.grid(True, linestyle="--", alpha=0.6)
 plt.tight_layout()
 
-out_file = output_dir / "tiempo_vs_tamaño.png"
+out_file = output_dir / "time_vs_size.png"
 plt.savefig(out_file, dpi=300)
-print(f" Gráfico guardado en: {out_file}")
+print(f" Chart saved in: {out_file}")
 
-# === Gráfico en escala logarítmica (opcional) ===
 plt.figure(figsize=(8,5))
 for lang in df["language"].unique():
     d = df[df["language"] == lang]
@@ -54,18 +48,17 @@ for lang in df["language"].unique():
              color=colors[lang], linewidth=2, label=lang.capitalize())
 
 plt.yscale("log")
-plt.title("Tiempo medio (escala logarítmica)")
-plt.xlabel("Tamaño de la matriz (n × n)")
-plt.ylabel("Tiempo medio (segundos, log)")
-plt.legend(title="Lenguaje")
+plt.title("Average time (logarithmic scale)")
+plt.xlabel("Matrix size (n × n)")
+plt.ylabel("Average time (seconds, log)")
+plt.legend(title="Language")
 plt.grid(True, linestyle="--", alpha=0.6)
 plt.tight_layout()
 
-out_file_log = output_dir / "tiempo_vs_tamaño_log.png"
+out_file_log = output_dir / "time_vs_size_log.png"
 plt.savefig(out_file_log, dpi=300)
-print(f" Gráfico logarítmico guardado en: {out_file_log}")
+print(f" Log. chart saved in: {out_file_log}")
 
-# === Gráfico de barras: Tiempo medio por tamaño ===
 plt.figure(figsize=(9,5))
 n_values = sorted(df["n"].unique())
 x = np.arange(len(n_values))
@@ -76,16 +69,16 @@ for i, lang in enumerate(["python", "java", "cpp"]):
     plt.bar(x + (i-1)*width, d["mean_seconds"], width, label=lang.capitalize(),
             color=colors[lang], edgecolor="black")
 
-plt.title("Comparativa por tamaño (barras)")
-plt.xlabel("Tamaño de matriz (n × n)")
-plt.ylabel("Tiempo medio (segundos)")
+plt.title("Comparison by size (bars)")
+plt.xlabel("Matrix size (n × n)")
+plt.ylabel("Average time (seconds)")
 plt.xticks(x, n_values)
-plt.legend(title="Lenguaje")
+plt.legend(title="Language")
 plt.grid(axis="y", linestyle="--", alpha=0.6)
 plt.tight_layout()
 
-out_file_bar = output_dir / "barras_comparativa.png"
+out_file_bar = output_dir / "comparison_bars.png"
 plt.savefig(out_file_bar, dpi=300)
-print(f" Gráfico de barras guardado en: {out_file_bar}")
+print(f" Bar chart saved in: {out_file_bar}")
 
-print("\n Todos los gráficos generados correctamente.")
+print("\n All graphics generated correctly.")

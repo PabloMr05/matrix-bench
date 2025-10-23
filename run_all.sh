@@ -1,9 +1,8 @@
 # =============================================
-# Benchmark Automático: Python, Java y C++
+# Automatic Benchmark: Python, Java and C++
 # =============================================
 
-# --- CONFIGURACIÓN ---
-SIZES=(128 256 384 512)   # tamaños de matriz
+SIZES=(128 256 384 512)   
 RUNS=5
 SEED=42
 
@@ -15,7 +14,7 @@ CPP_DIR="cpp"
 mkdir -p $RESULTS_DIR
 
 echo "=============================================="
-echo " Ejecutando benchmarks en varios lenguajes..."
+echo " Running benchmarks in multiple languages..."
 echo "=============================================="
 echo
 
@@ -54,8 +53,7 @@ done
 cd ..
 echo
 
-# --- Generar resumen combinado ---
-echo "Creando resumen en results/summary.csv..."
+echo "Creating summary in results/summary.csv..."
 python3 - <<'EOF'
 import pandas as pd
 import glob
@@ -79,19 +77,16 @@ print(summary)
 EOF
 
 echo
-echo "Benchmark completado. Resultados en la carpeta 'results/'"
+echo "Benchmark completed. Results in folder. 'results/'"
 echo "----------------------------------------------"
-echo "Archivos generados:"
+echo "Generated files:"
 ls results
 echo "----------------------------------------------"
-echo "Tabla resumen guardada en: results/summary.csv"
+echo "Summary table saved in: results/summary.csv"
 
-# --- Generar gráficos automáticamente ---
 if [ -f "plot_results.py" ]; then
     echo
-    echo "Generando gráficos con plot_results.py..."
+    echo "Generating charts withplot_results.py..."
     python3 plot_results.py
-    echo "Gráficos guardados en results/plots/"
-else
-    echo "No se encontró plot_results.py, omitiendo generación de gráficos."
+    echo "Charts saved in results/plots/"
 fi

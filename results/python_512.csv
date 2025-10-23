@@ -1,6 +1,6 @@
 language,n,run,seconds
-python,512,1,4.141130
-python,512,2,4.036729
-python,512,3,4.036833
-python,512,4,4.034536
-python,512,5,4.352845
+python,512,1,4.260550
+python,512,2,4.178625
+python,512,3,4.168258
+python,512,4,4.243225
+python,512,5,4.168782
