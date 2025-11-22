@@ -1,138 +1,123 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 from pathlib import Path
 
+# Carpeta raíz = donde está este script
 ROOT = Path(__file__).resolve().parent
-summary_path = ROOT / "results" / "summary_task2.csv"
-df = pd.read_csv(summary_path)
+SUMMARY = ROOT / "results" / "summary_task2.csv"
+PLOTS_DIR = ROOT / "results" / "plots"
 
-plots_dir = ROOT / "results" / "plots"
-plots_dir.mkdir(parents=True, exist_ok=True)
+PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
-dense_algos = ["dense_ijk", "dense_block", "dense_unroll"]
-sparse_algos = ["sparse_csr"]
+print(f"[plot_task2] Leyendo resumen desde: {SUMMARY}")
+df = pd.read_csv(SUMMARY)
 
-colors = {
-    "dense_ijk":   "#1f77b4",
-    "dense_block": "#ff7f0e",
-    "dense_unroll":"#2ca02c",
-    "sparse_csr":  "#d62728",
-}
+# Algoritmos
+DENSE_ALGOS = ["dense_ijk", "dense_block", "dense_unroll"]
+SPARSE_ALGOS = ["sparse_csr"]
 
-markers = {
-    "dense_ijk":   "o",
-    "dense_block": "s",
-    "dense_unroll":"^",
-    "sparse_csr":  "x",
-}
+# -------------------------------------------------------------------
+# 1) DENSOS: tiempo y memoria vs tamaño de la matriz
+# -------------------------------------------------------------------
+df_dense = df[df["algo"].isin(DENSE_ALGOS)].copy()
+df_dense = df_dense.sort_values(["algo", "n"])
 
-# ============================
-# 1) Tiempo vs tamaño (densos)
-# ============================
-df_dense = df[df["algo"].isin(dense_algos)]
+if not df_dense.empty:
+    # Tiempo vs n
+    plt.figure()
+    for algo in DENSE_ALGOS:
+        sub = df_dense[df_dense["algo"] == algo]
+        if sub.empty:
+            continue
+        plt.plot(
+            sub["n"],
+            sub["avg_time_sec"],
+            marker="o",
+            label=algo,
+        )
+    plt.xlabel("Tamaño de la matriz (n)")
+    plt.ylabel("Tiempo medio (s)")
+    plt.title("Tiempo medio vs tamaño (métodos densos)")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.legend()
+    out = PLOTS_DIR / "dense_time_vs_n.png"
+    plt.tight_layout()
+    plt.savefig(out, dpi=300)
+    plt.close()
+    print(f"[plot_task2] Guardado: {out}")
 
-plt.figure(figsize=(8,5))
-for algo in dense_algos:
-    sub = df_dense[df_dense["algo"] == algo].sort_values("n")
-    if sub.empty:
-        continue
-    plt.plot(
-        sub["n"],
-        sub["mean_seconds"],
-        marker=markers[algo],
-        color=colors[algo],
-        linewidth=2,
-        label=algo
-    )
+    # Memoria vs n
+    plt.figure()
+    for algo in DENSE_ALGOS:
+        sub = df_dense[df_dense["algo"] == algo]
+        if sub.empty:
+            continue
+        plt.plot(
+            sub["n"],
+            sub["avg_memory_mb"],
+            marker="o",
+            label=algo,
+        )
+    plt.xlabel("Tamaño de la matriz (n)")
+    plt.ylabel("Memoria media (MB)")
+    plt.title("Memoria media vs tamaño (métodos densos)")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.legend()
+    out = PLOTS_DIR / "dense_memory_vs_n.png"
+    plt.tight_layout()
+    plt.savefig(out, dpi=300)
+    plt.close()
+    print(f"[plot_task2] Guardado: {out}")
+else:
+    print("[plot_task2] No hay datos para métodos densos en summary_task2.csv")
 
-plt.title("Average execution time vs size (dense algorithms)")
-plt.xlabel("Matrix size n (n × n)")
-plt.ylabel("Average time (seconds)")
-plt.grid(True, linestyle="--", alpha=0.6)
-plt.legend()
-plt.tight_layout()
-out = plots_dir / "time_vs_size_dense.png"
-plt.savefig(out, dpi=300)
-plt.close()
-print(f"Saved: {out}")
+# -------------------------------------------------------------------
+# 2) SPARSE: tiempo y memoria vs densidad (solo matrices aleatorias)
+# -------------------------------------------------------------------
+df_sparse = df[df["algo"].isin(SPARSE_ALGOS)].copy()
 
-# Escala log
-plt.figure(figsize=(8,5))
-for algo in dense_algos:
-    sub = df_dense[df_dense["algo"] == algo].sort_values("n")
-    if sub.empty:
-        continue
-    plt.plot(
-        sub["n"],
-        sub["mean_seconds"],
-        marker=markers[algo],
-        color=colors[algo],
-        linewidth=2,
-        label=algo
-    )
+# Filtramos solo los n donde haya varias densidades distintas
+# (así evitamos que mc2depi, con una sola densidad, genere gráficos raros)
+def has_multiple_densities(g):
+    return g["density"].nunique() > 1
 
-plt.yscale("log")
-plt.title("Average execution time vs size (dense, log scale)")
-plt.xlabel("Matrix size n (n × n)")
-plt.ylabel("Average time (seconds, log)")
-plt.grid(True, linestyle="--", alpha=0.6)
-plt.legend()
-plt.tight_layout()
-out = plots_dir / "time_vs_size_dense_log.png"
-plt.savefig(out, dpi=300)
-plt.close()
-print(f"Saved: {out}")
+df_sparse_rand = df_sparse.groupby("n", group_keys=False).filter(has_multiple_densities)
+df_sparse_rand = df_sparse_rand.sort_values(["n", "density"])
 
-# ============================
-# 2) Tiempo y memoria vs densidad (sparse)
-# ============================
-df_sparse = df[df["algo"].isin(sparse_algos)]
-
-if not df_sparse.empty:
-    for n_val in sorted(df_sparse["n"].unique()):
-        sub = df_sparse[df_sparse["n"] == n_val].sort_values("density")
+if not df_sparse_rand.empty:
+    for n_val in sorted(df_sparse_rand["n"].unique()):
+        sub = df_sparse_rand[df_sparse_rand["n"] == n_val]
         if sub.empty:
             continue
 
-        # Tiempo vs densidad
-        plt.figure(figsize=(8,5))
-        plt.plot(
-            sub["density"],
-            sub["mean_seconds"],
-            marker=markers["sparse_csr"],
-            color=colors["sparse_csr"],
-            linewidth=2
-        )
+        # Tiempo vs densidad (escala log)
+        plt.figure()
+        plt.plot(sub["density"], sub["avg_time_sec"], marker="o")
         plt.xscale("log")
-        plt.title(f"Average time vs density (sparse_csr, n={n_val})")
-        plt.xlabel("Density (fraction of non-zero entries, log scale)")
-        plt.ylabel("Average time (seconds)")
+        plt.xlabel("Densidad (fracción de elementos no nulos, escala log)")
+        plt.ylabel("Tiempo medio (s)")
+        plt.title(f"Tiempo medio vs densidad (sparse_csr, n={n_val})")
         plt.grid(True, linestyle="--", alpha=0.6)
         plt.tight_layout()
-        out = plots_dir / f"time_vs_density_sparse_n{n_val}.png"
+        out = PLOTS_DIR / f"time_vs_density_sparse_n{n_val}.png"
         plt.savefig(out, dpi=300)
         plt.close()
-        print(f"Saved: {out}")
+        print(f"[plot_task2] Guardado: {out}")
 
-        # Memoria vs densidad
-        plt.figure(figsize=(8,5))
-        plt.plot(
-            sub["density"],
-            sub["mean_memory_mb"],
-            marker=markers["sparse_csr"],
-            color=colors["sparse_csr"],
-            linewidth=2
-        )
+        # Memoria vs densidad (escala log)
+        plt.figure()
+        plt.plot(sub["density"], sub["avg_memory_mb"], marker="o")
         plt.xscale("log")
-        plt.title(f"Average memory vs density (sparse_csr, n={n_val})")
-        plt.xlabel("Density (fraction of non-zero entries, log scale)")
-        plt.ylabel("Average memory (MB)")
+        plt.xlabel("Densidad (fracción de elementos no nulos, escala log)")
+        plt.ylabel("Memoria media (MB)")
+        plt.title(f"Memoria media vs densidad (sparse_csr, n={n_val})")
         plt.grid(True, linestyle="--", alpha=0.6)
         plt.tight_layout()
-        out = plots_dir / f"memory_vs_density_sparse_n{n_val}.png"
+        out = PLOTS_DIR / f"memory_vs_density_sparse_n{n_val}.png"
         plt.savefig(out, dpi=300)
         plt.close()
-        print(f"Saved: {out}")
+        print(f"[plot_task2] Guardado: {out}")
+else:
+    print("[plot_task2] No hay suficientes densidades distintas para generar gráficos SPARSE aleatorios")
 
-print("\nAll Task 2 graphics generated correctly.")
+print("[plot_task2] Gráficas de Task 2 generadas correctamente.")

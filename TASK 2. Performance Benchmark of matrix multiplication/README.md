@@ -27,7 +27,11 @@ TASK 2. Performance Benchmark of optimized and sparse matrix multiplication/
 ├─ paper/
 │  └─ task2_sparse_and_optimized_matmul.tex
 ├─ run_task2.sh              # Main script to run all experiments
-└─ plot_task2.py             # Script to generate plots from summary CSV
+├─ README.md            # This file
+├─ plot_task2.py             # Script to generate plots from summary CSV
+└── data/
+    └── mc2depi/
+        └── mc2depi.mtx  # (optional) SuiteSparse matrix in Matrix Market format
 ```
 ## 2. Requirements
 
@@ -70,10 +74,12 @@ What this script does:
 several matrix sizes (e.g. 512, 1024, 1536, 2048).
 3. Runs all sparse benchmarks (sparse_csr) for:
     - sizes n = 5000 and n = 10000
-    - densities d = 1e-4, 1e-3, 1e-2, 1e-1
-4. Saves all raw CSV files into results/.
-5. Creates a summary file results/summary_task2.csv with the averages.
-6. Calls plot_task2.py to generate all plots into results/plots/.
+    - densities d = 0.10, 0.01, 0.001, 0.0001.
+4. If data/mc2depi/mc2depi.mtx exists, run an additional sparse experiment
+using the SuiteSparse matrix mc2depi (CSR format) with a dense matrix
+B having a small number of columns (to keep memory under control).
+5. Aggregate all results into a single results/summary_task2.csv file.
+6. Generate plots in results/plots/ using plot_task2.py.
 
 ## 4. Output files
 
