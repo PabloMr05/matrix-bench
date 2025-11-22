@@ -4,7 +4,6 @@
 
 set -e
 
-# --- Rutas base ---
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CPP_DIR="${ROOT_DIR}/cpp"
 SRC_DIR="${CPP_DIR}/src"
@@ -12,7 +11,6 @@ RESULTS_DIR="${ROOT_DIR}/results"
 
 mkdir -p "${RESULTS_DIR}"
 
-# --- Parámetros de los experimentos ---
 SIZES_DENSE=(512 1024 1536 2048)
 RUNS=5
 SEED=42
@@ -22,7 +20,6 @@ DENSITIES=(0.10 0.01 0.001 0.0001)
 
 BLOCK_SIZE=64
 
-# --- Compilación ---
 echo "[*] Compilando cpp/src/bench_task2.cpp ..."
 
 CXX="${CXX:-clang++}"
@@ -35,9 +32,7 @@ cd "${ROOT_DIR}"
 echo "[*] Compilación completada."
 echo
 
-# -------------------------
-# 1) Experimentos DENSOS
-# -------------------------
+
 echo "=== Experimentos DENSOS ==="
 
 for n in "${SIZES_DENSE[@]}"; do
@@ -65,9 +60,7 @@ for n in "${SIZES_DENSE[@]}"; do
   done
 done
 
-# -------------------------
-# 2) Experimentos SPARSE (aleatorias)
-# -------------------------
+
 echo
 echo "=== Experimentos SPARSE (aleatorias) ==="
 
@@ -85,9 +78,7 @@ for n in "${SIZES_SPARSE[@]}"; do
   done
 done
 
-# -------------------------
-# 3) Experimento con mc2depi (si existe)
-# -------------------------
+
 echo
 echo "=== Experimento SPARSE con mc2depi (si está disponible) ==="
 MC2_PATH="${ROOT_DIR}/data/mc2depi/mc2depi.mtx"
@@ -105,9 +96,7 @@ else
   echo "  (mc2depi.mtx no encontrado en data/mc2depi/, se omite este experimento)"
 fi
 
-# -------------------------
-# 4) Resumen con pandas
-# -------------------------
+
 echo
 echo "[*] Generando resumen summary_task2.csv..."
 
@@ -154,9 +143,7 @@ echo "----------------------------------------------"
 ls "${RESULTS_DIR}"
 echo "----------------------------------------------"
 
-# -------------------------
-# 5) Gráficas
-# -------------------------
+
 if [ -f "${ROOT_DIR}/plot_task2.py" ]; then
   echo
   echo "[*] Generando gráficas con plot_task2.py..."

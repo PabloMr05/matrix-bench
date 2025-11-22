@@ -25,7 +25,7 @@ TASK 2. Performance Benchmark of optimized and sparse matrix multiplication/
 │     └─ bench_task2.cpp     # Benchmark main for Task 2
 ├─ results/                  # CSV files + plots will be created here
 ├─ paper/
-│  └─ task2_sparse_and_optimized_matmul.tex
+│  └─ TASK_2__Performance_Benchmark_of_matrix_multiplication.pdf
 ├─ run_task2.sh              # Main script to run all experiments
 ├─ README.md            # This file
 ├─ plot_task2.py             # Script to generate plots from summary CSV

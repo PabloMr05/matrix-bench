@@ -8,9 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 
-// =====================
-//  DENSE MATRICES
-// =====================
+
 
 inline std::vector<double> random_matrix(int n, std::uint64_t seed) {
     std::mt19937_64 rng(seed);
@@ -22,7 +20,6 @@ inline std::vector<double> random_matrix(int n, std::uint64_t seed) {
     return M;
 }
 
-// C = A * B, matrices densas n x n en formato fila-major
 inline std::vector<double> matmul_ijk(const std::vector<double>& A,
                                       const std::vector<double>& B,
                                       int n) {
@@ -42,7 +39,6 @@ inline std::vector<double> matmul_ijk(const std::vector<double>& A,
     return C;
 }
 
-// C = A * B con bloque (tiling) simple
 inline std::vector<double> matmul_blocked(const std::vector<double>& A,
                                           const std::vector<double>& B,
                                           int n,
@@ -74,7 +70,6 @@ inline std::vector<double> matmul_blocked(const std::vector<double>& A,
     return C;
 }
 
-// C = A * B con desenrollado manual del bucle interno (sobre j)
 inline std::vector<double> matmul_unrolled(const std::vector<double>& A,
                                            const std::vector<double>& B,
                                            int n) {
@@ -104,19 +99,16 @@ inline std::vector<double> matmul_unrolled(const std::vector<double>& A,
     return C;
 }
 
-// =====================
-//  SPARSE CSR MATRIX
-// =====================
+
 
 struct CSRMatrix {
-    int n;                      // número de filas
-    int n_cols;                 // número de columnas
-    std::vector<int> row_ptr;   // tamaño n+1
-    std::vector<int> col_idx;   // tamaño nnz
-    std::vector<double> values; // tamaño nnz
+    int n;                      
+    int n_cols;                 
+    std::vector<int> row_ptr;   
+    std::vector<int> col_idx;   
+    std::vector<double> values; 
 };
 
-// Genera una matriz dispersa n x n en CSR con densidad aproximada "density"
 inline CSRMatrix random_sparse_csr(int n, double density, std::uint64_t seed) {
     if (density <= 0.0) {
         density = 0.0;
@@ -134,7 +126,6 @@ inline CSRMatrix random_sparse_csr(int n, double density, std::uint64_t seed) {
     A.n_cols = n;
     A.row_ptr.assign(n + 1, 0);
 
-    // número esperado de no ceros por fila
     int target_per_row = static_cast<int>(density * n);
     if (target_per_row <= 0 && density > 0.0) target_per_row = 1;
     if (target_per_row > n) target_per_row = n;
@@ -150,7 +141,6 @@ inline CSRMatrix random_sparse_csr(int n, double density, std::uint64_t seed) {
             nnz_row = 0;
         }
 
-        // elegimos columnas únicas aleatorias para esta fila
         while ((int)cols.size() < nnz_row) {
             int c = Ucol(rng);
             bool exists = false;
@@ -175,7 +165,6 @@ inline CSRMatrix random_sparse_csr(int n, double density, std::uint64_t seed) {
     return A;
 }
 
-// Producto A (CSR, n x n) * B (densa, n x n_cols) = C (n x n_cols)
 inline std::vector<double> spmm_csr_dense(const CSRMatrix& A,
                                           const std::vector<double>& B,
                                           int n_cols) {
@@ -201,9 +190,7 @@ inline std::vector<double> spmm_csr_dense(const CSRMatrix& A,
     return C;
 }
 
-// =============================
-//  CARGA MATRIX MARKET (.mtx)
-// =============================
+
 
 inline CSRMatrix load_matrix_market(const std::string& filename) {
     std::ifstream in(filename);
@@ -213,14 +200,12 @@ inline CSRMatrix load_matrix_market(const std::string& filename) {
 
     std::string line;
 
-    // Saltar cabecera y comentarios (líneas que empiezan por '%')
     do {
         if (!std::getline(in, line)) {
             throw std::runtime_error("Fichero MatrixMarket inválido: " + filename);
         }
     } while (!line.empty() && line[0] == '%');
 
-    // Línea con: nrows ncols nnz
     int nrows = 0, ncols = 0;
     std::size_t nnz = 0;
     {
@@ -237,7 +222,6 @@ inline CSRMatrix load_matrix_market(const std::string& filename) {
 
     while (in >> i >> j >> x) {
         if (idx >= nnz) break;
-        // MatrixMarket es 1-based
         row[idx] = i - 1;
         col[idx] = j - 1;
         val[idx] = x;
@@ -245,7 +229,7 @@ inline CSRMatrix load_matrix_market(const std::string& filename) {
     }
 
     if (idx != nnz) {
-        nnz = idx; // por si el header no coincide exactamente
+        nnz = idx; 
         row.resize(nnz);
         col.resize(nnz);
         val.resize(nnz);
@@ -258,7 +242,6 @@ inline CSRMatrix load_matrix_market(const std::string& filename) {
     A.col_idx.resize(nnz);
     A.values.resize(nnz);
 
-    // Contar por fila
     for (std::size_t k = 0; k < nnz; ++k) {
         int r = row[k];
         if (r < 0 || r >= nrows) {
@@ -267,12 +250,10 @@ inline CSRMatrix load_matrix_market(const std::string& filename) {
         A.row_ptr[r + 1]++;
     }
 
-    // Prefijos
     for (int r = 0; r < nrows; ++r) {
         A.row_ptr[r + 1] += A.row_ptr[r];
     }
 
-    // Posición de escritura por fila
     std::vector<int> offset(A.row_ptr.begin(), A.row_ptr.end());
 
     for (std::size_t k = 0; k < nnz; ++k) {

@@ -10,10 +10,6 @@
 
 #include "matrix.hpp"
 
-// ============================
-// Utilidades de medida
-// ============================
-
 double get_memory_mb() {
     struct rusage usage{};
     getrusage(RUSAGE_SELF, &usage);
@@ -33,9 +29,6 @@ double get_cpu_time_seconds() {
     return user + sys;
 }
 
-// ============================
-// Programa principal
-// ============================
 
 int main(int argc, char** argv) {
     std::string algo = "dense_ijk";
@@ -47,7 +40,6 @@ int main(int argc, char** argv) {
     std::string out_file = "results_task2.csv";
     std::string matrix_file;
 
-    // Parseo sencillo de argumentos
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--algo" && i + 1 < argc) {
@@ -80,7 +72,6 @@ int main(int argc, char** argv) {
 
     ofs << "algo,n,density,block,run,time_sec,memory_mb,cpu_pct,nnz_or_n2\n";
 
-    // Preparar datos iniciales
     std::vector<double> A_dense;
     std::vector<double> B_dense;
     CSRMatrix A_sparse;
@@ -92,16 +83,12 @@ int main(int argc, char** argv) {
         B_dense = random_matrix(n, seed + 1);
     } else {
         if (!matrix_file.empty()) {
-            // Cargar mc2depi u otra matriz desde Matrix Market
             A_sparse = load_matrix_market(matrix_file);
-            n = A_sparse.n; // número de filas
-            // Densidad real de la matriz
+            n = A_sparse.n; 
             double nnz = static_cast<double>(A_sparse.values.size());
             density = nnz / (static_cast<double>(A_sparse.n) * A_sparse.n_cols);
 
-            // Para no petar memoria con mc2depi, usamos pocas columnas en B
             int n_cols = std::min(64, std::max(1, A_sparse.n_cols));
-            // Si la matriz es enorme, podemos fijar por ejemplo 32 columnas
             if (A_sparse.n > 200000) {
                 n_cols = 32;
             }
@@ -112,13 +99,11 @@ int main(int argc, char** argv) {
             for (double& v : B_dense) v = U(rng);
 
         } else {
-            // Matriz dispersa aleatoria n x n y B densa n x n
             A_sparse = random_sparse_csr(n, density, seed);
             B_dense = random_matrix(n, seed + 1);
         }
     }
 
-    // Ejecutar runs
     for (int r = 0; r < runs; ++r) {
         double mem_before = get_memory_mb();
         double cpu_before = get_cpu_time_seconds();
@@ -138,17 +123,14 @@ int main(int argc, char** argv) {
                 std::cerr << "Algoritmo denso desconocido: " << algo << "\n";
                 return 1;
             }
-            (void)C; // evitar warning
+            (void)C; 
             nnz_or_n2 = static_cast<long long>(n) * static_cast<long long>(n);
         } else {
-            // Sparse CSR * densa
             int n_cols_B;
             if (!matrix_file.empty()) {
-                // mc2depi: B_dense ya tiene tamaño A_sparse.n x n_cols_B
                 n_cols_B = static_cast<int>(
                     B_dense.size() / static_cast<std::size_t>(A_sparse.n));
             } else {
-                // aleatoria cuadrada
                 n_cols_B = n;
             }
 
